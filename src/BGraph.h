@@ -98,7 +98,7 @@ namespace bgraph
     //};
 
 #define ASSIGN2D(p,x,y) *p++ = x; *p++ = y
-#define GAP_ASSIGN2D(p,x,y,gap) *p++ = x; *p++ = y; p = (decltype(p)*)((uint8_t*)p + gap)
+#define GAP_ASSIGN2D(p,x,y,gap) *p++ = x; *p++ = y; p = (decltype(p))((uint8_t*)p + gap)
 
     template<typename T> 
     struct Rectangle
@@ -108,7 +108,7 @@ namespace bgraph
 
 		T* data() { return (T*)this; }
 
-        void getVertices(T* vertices, Topology::Topology topo)
+        void getVertices(T* vertices, Topology::Topology topo) const
         {
             switch(topo)
             {
@@ -120,26 +120,26 @@ namespace bgraph
         }
 
         template<Topology::Topology t_topo =  Topology::TOPO_TRIANGLE_STRIP>
-        void getVertices(T* vertices);
+        void getVertices(T* vertices) const;
 
         template<Topology::Topology t_topo =  Topology::TOPO_TRIANGLE_STRIP>
-        void getVertices(T* vertices, unsigned int gapBytes);
+        void getVertices(T* vertices, unsigned int gapBytes) const;
 
-		template<typename T_Attr, typename T_MemberAddr, Topology::Topology t_topo = Topology::TOPO_TRIANGLE_STRIP>
-		void getVertices(T_Attr* attrs, T_MemberAddr T_Attr::* vertice) 
+		template<typename T_Attrs, typename T_MemVerticeAddr, Topology::Topology t_topo = Topology::TOPO_TRIANGLE_STRIP>
+		void getVertices(T_Attrs* attrs, T_MemVerticeAddr T_Attrs::* vertice) const
 		{
-			auto gap = sizeof(T_Attr) - sizeof(T) * 2;
-			getVertices<t_topo>((T*) &(attrs->*vertice), gap);
+			auto gap = sizeof(T_Attrs) - sizeof(T) * 2;
+			getVertices<t_topo>((T*) &(attrs->*vertice), (unsigned int)gap);
 		}
 
 		template<Topology::Topology t_topo = Topology::TOPO_TRIANGLE_STRIP>
-		void getVertices(Point2D<T>* vertices)
+		void getVertices(Point2D<T>* vertices) const
 		{
-			getVertices<t_topo>((T)*vertices);
+			getVertices<t_topo>((T*) vertices);
 		}
 
         template<> 
-        void getVertices<Topology::TOPO_TRIANGLE_STRIP>(T* vertices)
+        void getVertices<Topology::TOPO_TRIANGLE_STRIP>(T* vertices) const
         {
             T halfWidth = width / 2, halfHeight = height / 2;
 			T l = - halfWidth, r =  halfWidth, t = halfHeight, b = - halfHeight;
@@ -150,7 +150,7 @@ namespace bgraph
         }
 
         template<>
-        void getVertices<Topology::TOPO_TRIANGLE_STRIP>(T* vertices, unsigned int gapBytes)
+        void getVertices<Topology::TOPO_TRIANGLE_STRIP>(T* vertices, unsigned int gapBytes) const
         {
 			T halfWidth = width / 2, halfHeight = height / 2;
 			T l = -halfWidth, r = halfWidth, t = halfHeight, b = -halfHeight;
@@ -159,6 +159,11 @@ namespace bgraph
             A(l,t);A(r,t);A(l,b);A(r,b);
             #undef A
         }
+
+		friend ostream& operator <<(ostream& os, const Rectangle& rect) 
+		{
+			os << "width: " << rect.width << ", height: " << rect.height;
+		}
     };
 
 
