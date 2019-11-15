@@ -55,8 +55,16 @@ namespace bgraph
             }
             //error
         }
-        
-        template<typename T, T::*
+
+        void getVertices(T* vertices, unsigned int gapBytes)
+        {
+            T halfWidth = shape.width / 2, halfHeight = shape.height / 2;
+			T ox = pos.x, oy = pos.y;
+			T l = ox - halfWidth, r = ox + halfWidth, t = oy + halfHeight, b = oy - halfHeight;
+            #define A(x,y) GAP_ASSIGN2D(vertices,x,y,gapBytes)
+            A(l,t);A(r,t);A(l,b);A(r,b);
+            #undef A
+        }
 
         template<Topology::Topology t_topo =  Topology::TOPO_TRIANGLE_STRIP>
         void getVertices(T* vertices);
