@@ -2,6 +2,13 @@
 
 namespace bgraph
 {
+    template<typename T, typename U> 
+    constexpr size_t offsetOf(U T::*member)
+    {
+        return (char*)&((T*)nullptr->*member) - (char*)nullptr;
+    }
+
+
     namespace Topology
     {
         enum Topology
@@ -56,18 +63,15 @@ namespace bgraph
             //error
         }
 
-        void getVertices(T* vertices, unsigned int gapBytes)
-        {
-            T halfWidth = shape.width / 2, halfHeight = shape.height / 2;
-			T ox = pos.x, oy = pos.y;
-			T l = ox - halfWidth, r = ox + halfWidth, t = oy + halfHeight, b = oy - halfHeight;
-            #define A(x,y) GAP_ASSIGN2D(vertices,x,y,gapBytes)
-            A(l,t);A(r,t);A(l,b);A(r,b);
-            #undef A
-        }
-
         template<Topology::Topology t_topo =  Topology::TOPO_TRIANGLE_STRIP>
         void getVertices(T* vertices);
+
+        template<Topology::Topology t_topo =  Topology::TOPO_TRIANGLE_STRIP>
+        void getVertices(T* vertices, unsigned int gapBytes);
+
+        template<typename U, typename V,Topology::Topology t_topo =  Topology::TOPO_TRIANGLE_STRIP>
+        void getVerices(U* attribtues, U V::* vertice);
+
 
         template<> 
         void getVertices<Topology::TOPO_TRIANGLE_STRIP>(T* vertices)
@@ -79,6 +83,26 @@ namespace bgraph
             #define A(x,y) ASSIGN2D(vertices,x,y)
             A(l,t);A(r,t);A(l,b);A(r,b);
             #undef A
+        }
+
+        template<>
+        void getVertices<Topology::TOPO_TRIANGLE_STRIP>(T* vertices, unsigned int gapBytes)
+        {
+            T halfWidth = shape.width / 2, halfHeight = shape.height / 2;
+			T ox = pos.x, oy = pos.y;
+			T l = ox - halfWidth, r = ox + halfWidth, t = oy + halfHeight, b = oy - halfHeight;
+
+            #define A(x,y) GAP_ASSIGN2D(vertices,x,y,gapBytes)
+            A(l,t);A(r,t);A(l,b);A(r,b);
+            #undef A
+        }
+
+        template<typename U, typename V>
+        void getVerices<U, V,Topology::TOPO_TRIANGLE_STRIP>(U* attribtues, U V::* vertice)
+        {
+            auto verticeOffset = offsetOf(vertice);
+            auto gap = sizeof(U) - sizeof(T)*2;
+            getVertices((T*)(attributes->*vertice), gap);
         }
 
     };
