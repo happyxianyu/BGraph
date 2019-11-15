@@ -22,36 +22,35 @@ namespace bgraph
 			TOPO_TRIANGLE_STRIP,
         };
 
-		ostream& operator << (ostream& os, Topology topo) 
+		ostream& operator << (ostream& os, Topology topo)
 		{
 			static const char s_unknown[] = "unknown";
 			static const char s_triangle_list[] = "triangle list";
 			static const char s_triangle_strip[] = "triangle strip";
-			switch (topo)
-			{
-			case bgraph::Topology::TOPO_UNKNOWN:
+			static const char* s_nameTable[]{
+				s_unknown,
+				s_triangle_list,
+				s_triangle_strip
+			};
+			if (topo >= sizeof(s_nameTable)) {
 				os << s_unknown;
-				break;
-			case bgraph::Topology::TOPO_TRIANGLE_LIST:
-				os << s_triangle_list;
-				break;
-			case bgraph::Topology::TOPO_TRIANGLE_STRIP:
-				os << s_triangle_strip;
-				break;
+			}
+			else {
+				os << s_nameTable[topo];
 			}
 			return os;
 		}
     };
 
     template<typename T>
-    struct Point2D
+    struct Point2
     {
         T x;
         T y;
 
 		T* data() { return (T*)this; }
 		
-		friend ostream& operator <<(ostream& os, const Point2D<T>& pt) 
+		friend ostream& operator <<(ostream& os, const Point2<T>& pt) 
 		{
 			os << "(" << pt.x << ", " << pt.y << ")";
 			return os;
@@ -59,43 +58,34 @@ namespace bgraph
     };
 
     template<typename T>
-    struct Point3D : Point2D<T>
+    struct Point3 : Point2<T>
     {
         T z;
 
 		T* data() { return (T*)this; }
 
-		friend ostream& operator <<(ostream& os, const Point3D<T>& pt)
+		friend ostream& operator <<(ostream& os, const Point3<T>& pt)
 		{
 			os << "(" << pt.x << ", " << pt.y <<", "<< pt.z << ")";
 			return os;
 		}
+
     };
 
 	template<typename T>
-	struct Point4D : Point3D<T>
+	struct Point4 : Point3<T>
 	{
 		T w;
 
 		T* data() { return (T*)this; }
 
-		friend ostream& operator <<(ostream& os, const Point4D<T>& pt)
+		friend ostream& operator <<(ostream& os, const Point4<T>& pt)
 		{
 			os << "(" << pt.x << ", " << pt.y << ", " << pt.z <<", "<<pt.w<<", "<< ")";
 			return os;
 		}
-	};
-    //template<typename T>
-    //struct Graph2D
-    //{
-    //    Point2D<T> pos;
-    //};
 
-    //template<typename T>
-    //struct Graph3D
-    //{
-    //    Point2D<T> pos;
-    //};
+	};
 
 #define ASSIGN2D(p,x,y) *p++ = x; *p++ = y
 #define GAP_ASSIGN2D(p,x,y,gap) *p++ = x; *p++ = y; p = (decltype(p))((uint8_t*)p + gap)
@@ -133,7 +123,7 @@ namespace bgraph
 		}
 
 		template<Topology::Topology t_topo = Topology::TOPO_TRIANGLE_STRIP>
-		void getVertices(Point2D<T>* vertices) const
+		void getVertices(Point2<T>* vertices) const
 		{
 			getVertices<t_topo>((T*) vertices);
 		}
@@ -163,14 +153,16 @@ namespace bgraph
 		friend ostream& operator <<(ostream& os, const Rectangle& rect) 
 		{
 			os << "width: " << rect.width << ", height: " << rect.height;
+			return os;
 		}
     };
 
-
-	using Point2Di = Point2D<int>;
-	using Point2Df = Point2D<float>;
-	using Point2Dd = Point2D<double>;
-
+	using Point2i = Point2<int>;
+	using Point2f = Point2<float>;
+	using Point2d = Point2<double>;
+	using Point3i = Point3<int>;
+	using Point3f = Point3<float>;
+	using Point3d = Point3<double>;
 
 
 
