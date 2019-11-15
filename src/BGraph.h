@@ -15,11 +15,11 @@ namespace bgraph
 
     namespace Topology
     {
-        enum Topology
-        {
-            TOPO_UNKNOWN,
-            TOPO_TRIANGLE_LIST,
-            TOPO_TRIANGLE_STRIP,
+		enum Topology
+		{
+			TOPO_UNKNOWN,
+			TOPO_TRIANGLE_LIST,
+			TOPO_TRIANGLE_STRIP,
         };
 
 		ostream& operator << (ostream& os, Topology topo) 
@@ -27,17 +27,16 @@ namespace bgraph
 			static const char s_unknown[] = "unknown";
 			static const char s_triangle_list[] = "triangle list";
 			static const char s_triangle_strip[] = "triangle strip";
-			using std::cout;
 			switch (topo)
 			{
 			case bgraph::Topology::TOPO_UNKNOWN:
-				cout << s_unknown;
+				os << s_unknown;
 				break;
 			case bgraph::Topology::TOPO_TRIANGLE_LIST:
-				cout << s_triangle_list;
+				os << s_triangle_list;
 				break;
 			case bgraph::Topology::TOPO_TRIANGLE_STRIP:
-				cout << s_triangle_strip;
+				os << s_triangle_strip;
 				break;
 			}
 			return os;
@@ -49,11 +48,12 @@ namespace bgraph
     {
         T x;
         T y;
+
+		T* data() { return (T*)this; }
 		
 		friend ostream& operator <<(ostream& os, const Point2D<T>& pt) 
 		{
-			using std::cout;
-			cout << "(" << pt.x << ", " << pt.y << ")";
+			os << "(" << pt.x << ", " << pt.y << ")";
 			return os;
 		}
     };
@@ -62,34 +62,51 @@ namespace bgraph
     struct Point3D : Point2D<T>
     {
         T z;
+
+		T* data() { return (T*)this; }
+
 		friend ostream& operator <<(ostream& os, const Point3D<T>& pt)
 		{
-			using std::cout;
-			cout << "(" << pt.x << ", " << pt.y <<", "<< pt.z << ")";
+			os << "(" << pt.x << ", " << pt.y <<", "<< pt.z << ")";
 			return os;
 		}
     };
 
-    template<typename T>
-    struct Graph2D
-    {
-        Point2D<T> pos;
-    };
+	template<typename T>
+	struct Point4D : Point3D<T>
+	{
+		T w;
 
-    template<typename T>
-    struct Graph3D
-    {
-        Point2D<T> pos;
-    };
+		T* data() { return (T*)this; }
+
+		friend ostream& operator <<(ostream& os, const Point4D<T>& pt)
+		{
+			os << "(" << pt.x << ", " << pt.y << ", " << pt.z <<", "<<pt.w<<", "<< ")";
+			return os;
+		}
+	};
+    //template<typename T>
+    //struct Graph2D
+    //{
+    //    Point2D<T> pos;
+    //};
+
+    //template<typename T>
+    //struct Graph3D
+    //{
+    //    Point2D<T> pos;
+    //};
 
 #define ASSIGN2D(p,x,y) *p++ = x; *p++ = y
 #define GAP_ASSIGN2D(p,x,y,gap) *p++ = x; *p++ = y; p = (decltype(p)*)((uint8_t*)p + gap)
 
     template<typename T> 
-    struct Rectangle2D : Graph2D<T>
+    struct Rectangle
     {
         T width;
         T height;
+
+		T* data() { return (T*)this; }
 
         void getVertices(T* vertices, Topology::Topology topo)
         {
@@ -124,9 +141,8 @@ namespace bgraph
         template<> 
         void getVertices<Topology::TOPO_TRIANGLE_STRIP>(T* vertices)
         {
-            T halfWidth = shape.width / 2, halfHeight = shape.height / 2;
-			T ox = pos.x, oy = pos.y;
-			T l = ox - halfWidth, r = ox + halfWidth, t = oy + halfHeight, b = oy - halfHeight;
+            T halfWidth = width / 2, halfHeight = height / 2;
+			T l = - halfWidth, r =  halfWidth, t = halfHeight, b = - halfHeight;
 
             #define A(x,y) ASSIGN2D(vertices,x,y)
             A(l,t);A(r,t);A(l,b);A(r,b);
@@ -136,9 +152,8 @@ namespace bgraph
         template<>
         void getVertices<Topology::TOPO_TRIANGLE_STRIP>(T* vertices, unsigned int gapBytes)
         {
-            T halfWidth = shape.width / 2, halfHeight = shape.height / 2;
-			T ox = pos.x, oy = pos.y;
-			T l = ox - halfWidth, r = ox + halfWidth, t = oy + halfHeight, b = oy - halfHeight;
+			T halfWidth = width / 2, halfHeight = height / 2;
+			T l = -halfWidth, r = halfWidth, t = halfHeight, b = -halfHeight;
 
             #define A(x,y) GAP_ASSIGN2D(vertices,x,y,gapBytes)
             A(l,t);A(r,t);A(l,b);A(r,b);
